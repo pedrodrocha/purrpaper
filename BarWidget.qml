@@ -23,6 +23,12 @@ BarWidget {
     Qt.callLater(function() { root.popoutSwitchClosing = false })
   }
 
+  function switchPanel(direction) {
+    if (root.bar && typeof root.bar.switchPanelFrom === "function")
+      return root.bar.switchPanelFrom(root, direction)
+    return false
+  }
+
   PluginUi.PluginConfig { id: config }
   PluginUi.PluginState {
     id: pluginState
@@ -168,17 +174,24 @@ BarWidget {
     owner: root
     bar: root.bar
     open: root.opened
+    focusTarget: keyCatcher
     contentWidth: panel.fittedContentWidth(Style.space(420))
     contentHeight: panel.fittedContentHeight(column.implicitHeight)
 
-    Column {
-      id: column
-      anchors.left: parent.left
-      anchors.right: parent.right
-      anchors.top: parent.top
-      spacing: Style.space(14)
+    PanelKeyCatcher {
+      id: keyCatcher
+      anchors.fill: parent
+      onCloseRequested: root.close()
+      onTabRequested: function(direction) { root.switchPanel(direction) }
 
-      Row {
+      Column {
+        id: column
+        anchors.left: parent.left
+        anchors.right: parent.right
+        anchors.top: parent.top
+        spacing: Style.space(14)
+
+        Row {
         width: parent.width
         spacing: Style.space(12)
 
@@ -264,14 +277,15 @@ BarWidget {
         wrapMode: Text.WordWrap
       }
 
-      Text {
-        width: parent.width
-        text: pluginState.canOperate ? "Left click opens this panel · right click rotates · middle click saves" : "Left click opens this panel"
-        color: config.foreground
-        opacity: 0.55
-        font.family: config.fontFamily
-        font.pixelSize: config.fontCaption
-        wrapMode: Text.WordWrap
+        Text {
+          width: parent.width
+          text: pluginState.canOperate ? "Left click opens this panel · right click rotates · middle click saves" : "Left click opens this panel"
+          color: config.foreground
+          opacity: 0.55
+          font.family: config.fontFamily
+          font.pixelSize: config.fontCaption
+          wrapMode: Text.WordWrap
+        }
       }
     }
   }
