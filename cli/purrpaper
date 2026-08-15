@@ -344,11 +344,6 @@ case "$command" in
     unlink_cli
     exit 0
     ;;
-  uninstall)
-    warn "'uninstall' is kept as an alias; prefer ${MAUVE}purrpaper remove${RESET}."
-    remove_plugin "${@:2}"
-    exit 0
-    ;;
 esac
 
 need_control

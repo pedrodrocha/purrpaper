@@ -8,6 +8,28 @@ The cat is polite about it. Rotation only happens while your active Omarchy them
 
 The source gallery lives at <https://files.orangc.net/media/walls-catppuccin-mocha/>, and the script reads its index from <https://api.github.com/repos/orangci/walls-catppuccin-mocha/contents/>.
 
+<p align="center">
+  <img src="docs/assets/purrpaper-panel-enabled.png" alt="Purrpaper panel showing the enabled state, current wallpaper, interval controls, and rotate/save buttons" width="430">
+  <img src="docs/assets/purrpaper-panel-disabled.png" alt="Purrpaper panel showing the disabled state with a single enable button" width="330">
+</p>
+
+It is meant to feel like a little bit of desktop magic: quiet most of the time, present when you ask for it, and just playful enough to make wallpaper rotation feel less like configuration and more like a tiny ritual.
+
+## tiny wallpaper gallery
+
+Purrpaper shuffles through orangc's Catppuccin Mocha wallpaper collection. These are small previews of the kind of backgrounds it can pull into your Omarchy setup, rotate on a schedule, and save as favorites when one feels too good to lose.
+
+<p align="center">
+  <img src="docs/assets/wallpapers/cartoon-castle.webp" alt="Catppuccin Mocha wallpaper preview: cartoon castle" width="245">
+  <img src="docs/assets/wallpapers/astronaut.webp" alt="Catppuccin Mocha wallpaper preview: astronaut" width="245">
+  <img src="docs/assets/wallpapers/black-hole.webp" alt="Catppuccin Mocha wallpaper preview: black hole" width="245">
+  <img src="docs/assets/wallpapers/asian-village.webp" alt="Catppuccin Mocha wallpaper preview: asian village" width="245">
+  <img src="docs/assets/wallpapers/beach-path.webp" alt="Catppuccin Mocha wallpaper preview: beach path" width="245">
+  <img src="docs/assets/wallpapers/blue-flowers.webp" alt="Catppuccin Mocha wallpaper preview: blue flowers" width="245">
+</p>
+
+The previews above are intentionally tiny and compressed for the README. Purrpaper downloads the real images from the source collection when it rotates your background.
+
 ## the vibe
 
 Purrpaper gives you an Omarchy service, a small bar widget, and a friendly `purrpaper` CLI. The service does the quiet wallpaper work in the background. The widget is there for quick little rituals: left click opens the panel, right click rotates now, and middle click saves the current wallpaper before it wanders back into the cozy void.
