@@ -14,14 +14,32 @@ is_safe_wallpaper_filename() {
 is_expected_wallpaper_url() {
   local image_url="$1"
 
-  [[ "$image_url" == https://raw.githubusercontent.com/orangci/walls-catppuccin-mocha/* ]]
+  [[ "$image_url" == "$GALLERY_PAGE_URL"* ]] ||
+    [[ "$image_url" == https://raw.githubusercontent.com/orangci/walls-catppuccin-mocha/* ]]
 }
 
 # Remote provider -----------------------------------------------------------
 
-pick_random_wallpaper() {
-  # Returns: <download-url> TAB <filename>. The remote JSON is data only: it is
-  # parsed, filtered to the expected mirror, and never executed.
+pick_random_wallpaper_from_gallery() {
+  # Returns: <download-url> TAB <filename>. The gallery HTML is treated as data:
+  # only safe image filenames from anchor hrefs are kept, then converted to
+  # direct file URLs on the expected gallery host.
+  local href filename
+
+  curl -fsSL --retry 2 -A 'Mozilla/5.0' "$GALLERY_PAGE_URL" |
+    grep -Eoi 'href="[^"]+\.(jpe?g|png|gif|bmp|webp)(\?[^""]*)?"' |
+    sed -E 's/^href="//I; s/"$//' |
+    while IFS= read -r href; do
+      filename="${href%%\?*}"
+      is_safe_wallpaper_filename "$filename" || continue
+      printf '%s%s\t%s\n' "$GALLERY_PAGE_URL" "$filename" "$filename"
+    done |
+    shuf -n 1
+}
+
+pick_random_wallpaper_from_github() {
+  # Fallback for the mirror API. The remote JSON is data only: it is parsed,
+  # filtered to the expected mirror, and never executed.
   curl -fsSL --retry 2 -A 'Mozilla/5.0' "$GITHUB_API_URL" |
     jq -r '.[]
       | select(.type == "file")
@@ -30,6 +48,10 @@ pick_random_wallpaper() {
       | [.download_url, .name]
       | @tsv' |
     shuf -n 1
+}
+
+pick_random_wallpaper() {
+  pick_random_wallpaper_from_gallery || pick_random_wallpaper_from_github
 }
 
 # Downloads -----------------------------------------------------------------

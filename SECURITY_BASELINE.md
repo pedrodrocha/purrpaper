@@ -8,6 +8,8 @@ Runtime dependencies are standard Omarchy/Arch tools already expected on an Omar
 
 - `bash`
 - `curl`
+- `grep`
+- `sed`
 - `jq`
 - `shuf` from GNU coreutils
 - Omarchy CLI commands: `omarchy`, `omarchy-shell`
@@ -17,8 +19,9 @@ Runtime dependencies are standard Omarchy/Arch tools already expected on an Omar
 
 The rotator fetches wallpaper metadata and image files from orangc's Catppuccin Mocha wallpaper mirror:
 
-- `https://api.github.com/repos/orangci/walls-catppuccin-mocha/contents/`
-- `https://raw.githubusercontent.com/orangci/walls-catppuccin-mocha/...`
+- `https://files.orangc.net/media/walls-catppuccin-mocha/`
+- `https://api.github.com/repos/orangci/walls-catppuccin-mocha/contents/` as a fallback index
+- `https://raw.githubusercontent.com/orangci/walls-catppuccin-mocha/...` as a fallback image mirror
 
 Downloaded data is treated as data only. It is filtered by filename, file type, and expected URL prefix, saved as an image, and never executed.
 
