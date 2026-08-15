@@ -1,14 +1,19 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+# Bootstrap -----------------------------------------------------------------
+
 APP_NAME="purrpaper"
 SOURCE="${BASH_SOURCE[0]}"
 if command -v readlink >/dev/null 2>&1; then
   SOURCE="$(readlink -f -- "$SOURCE")"
 fi
+
 CLI_DIR="$(cd -- "$(dirname -- "$SOURCE")" && pwd)"
 APP_DIR="$(cd -- "$CLI_DIR/.." && pwd)"
 CONTROL="$APP_DIR/scripts/control"
+
+# Presentation --------------------------------------------------------------
 
 if [[ -t 1 && -z "${NO_COLOR:-}" ]]; then
   BOLD=$'\033[1m'
@@ -27,80 +32,50 @@ else
 fi
 
 CAT="󰄛"
+TAGLINE="tiny wallpaper magic for Catppuccin Omarchy"
+
+# Output helpers ------------------------------------------------------------
 
 say() { printf '%b\n' "$*"; }
 say_err() { printf '%b\n' "$*" >&2; }
-label() { printf '%b%-18s%b %s\n' "$BLUE" "$1" "$RESET" "$2"; }
-success() { say "${GREEN}${CAT}${RESET} ${TEXT}$*${RESET}"; }
-warn() { say "${YELLOW}☾${RESET} ${PEACH}$*${RESET}"; }
-cat_note() { say "${MAUVE}${CAT}${RESET} ${TEXT}$*${RESET}"; }
-disabled() { say "${RED}${CAT}${RESET} ${TEXT}$*${RESET}"; }
-fail() { local message="$1" code="${2:-1}"; say_err "${RED}✗${RESET} ${TEXT}$message${RESET}"; exit "$code"; }
+
+label() {
+  printf '%b%-18s%b %s\n' "$BLUE" "$1" "$RESET" "$2"
+}
+
+success() {
+  say "${GREEN}${CAT}${RESET} ${TEXT}$*${RESET}"
+}
+
+warn() {
+  say "${YELLOW}☾${RESET} ${PEACH}$*${RESET}"
+}
+
+cat_note() {
+  say "${MAUVE}${CAT}${RESET} ${TEXT}$*${RESET}"
+}
+
+disabled() {
+  say "${RED}${CAT}${RESET} ${TEXT}$*${RESET}"
+}
+
+fail() {
+  local message="$1" code="${2:-1}"
+
+  say_err "${RED}✗${RESET} ${TEXT}$message${RESET}"
+  exit "$code"
+}
+
+# Formatting helpers --------------------------------------------------------
+
 pretty_path() {
   local path="$1"
+
   case "$path" in
     "$HOME") printf '~' ;;
     "$HOME"/*) printf '~/%s' "${path#"$HOME"/}" ;;
     *) printf '%s' "$path" ;;
   esac
-}
-
-usage() {
-  cat <<EOF
-${BOLD}${MAUVE}${CAT} purrpaper${RESET} ${SUBTEXT}— tiny wallpaper magic for Catppuccin Omarchy${RESET}
-
-${BOLD}Usage:${RESET} purrpaper <command> [value]
-
-${BOLD}Commands:${RESET}
-  ${MAUVE}status${RESET}              Show a readable status summary
-  ${MAUVE}status --json${RESET}       Show raw widget/control JSON
-  ${MAUVE}rotate${RESET}              Pick and apply a wallpaper now
-  ${MAUVE}save${RESET}                Save the current wallpaper as a favorite
-  ${MAUVE}enable | on${RESET}         Enable automatic rotation
-  ${MAUVE}disable | off${RESET}       Disable automatic rotation
-  ${MAUVE}toggle${RESET}              Toggle automatic rotation
-  ${MAUVE}every <duration>${RESET}    Set the rotation interval: 30m, 4h, 1d, daily, hourly
-  ${MAUVE}sooner <duration>${RESET}   Shorten the interval by that duration
-  ${MAUVE}later <duration>${RESET}    Lengthen the interval by that duration
-  ${MAUVE}open${RESET}                Open the current wallpaper file
-  ${MAUVE}uninstall${RESET}           Remove the CLI link, then remove the Omarchy plugin
-  ${MAUVE}help${RESET}                Show this help
-
-${BOLD}Examples:${RESET}
-  ${SUBTEXT}purrpaper status${RESET}
-  ${SUBTEXT}purrpaper rotate${RESET}
-  ${SUBTEXT}purrpaper save${RESET}
-  ${SUBTEXT}purrpaper every 4h${RESET}
-  ${SUBTEXT}purrpaper every daily${RESET}
-  ${SUBTEXT}purrpaper sooner 1h${RESET}
-
-${MAUVE}${CAT}${RESET} ${SUBTEXT}Durations understand 30m, 4h, 1d, hourly, and daily.${RESET}
-EOF
-}
-
-need_control() {
-  [[ -x "$CONTROL" ]] || fail "missing control script: ${SUBTEXT}$CONTROL${RESET}" 1
-}
-
-duration_minutes() {
-  local value="${1:-}"
-
-  case "$value" in
-    hourly|hour) echo 60; return 0 ;;
-    daily|day) echo 1440; return 0 ;;
-  esac
-
-  if [[ "$value" =~ ^[0-9]+$ ]]; then
-    echo "$value"
-  elif [[ "$value" =~ ^([0-9]+)m(in|inute|inutes)?$ ]]; then
-    echo "${BASH_REMATCH[1]}"
-  elif [[ "$value" =~ ^([0-9]+)h(our|ours)?$ ]]; then
-    echo "$(( BASH_REMATCH[1] * 60 ))"
-  elif [[ "$value" =~ ^([0-9]+)d(ay|ays)?$ ]]; then
-    echo "$(( BASH_REMATCH[1] * 1440 ))"
-  else
-    fail "duration must look like ${MAUVE}30m${RESET}, ${MAUVE}4h${RESET}, ${MAUVE}1d${RESET}, ${MAUVE}hourly${RESET}, or ${MAUVE}daily${RESET}." 2
-  fi
 }
 
 human_duration() {
@@ -134,10 +109,81 @@ human_seconds() {
   fi
 }
 
-print_status() {
-  local json enabled interval current theme catppuccin no_internet rotating remaining saved_dir cache_dir
+# Duration parsing ----------------------------------------------------------
 
-  json="$($CONTROL status)"
+duration_minutes() {
+  local value="${1:-}"
+
+  case "$value" in
+    hourly|hour) echo 60; return 0 ;;
+    daily|day) echo 1440; return 0 ;;
+  esac
+
+  if [[ "$value" =~ ^[0-9]+$ ]]; then
+    echo "$value"
+  elif [[ "$value" =~ ^([0-9]+)m(in|inute|inutes)?$ ]]; then
+    echo "${BASH_REMATCH[1]}"
+  elif [[ "$value" =~ ^([0-9]+)h(our|ours)?$ ]]; then
+    echo "$(( BASH_REMATCH[1] * 60 ))"
+  elif [[ "$value" =~ ^([0-9]+)d(ay|ays)?$ ]]; then
+    echo "$(( BASH_REMATCH[1] * 1440 ))"
+  else
+    fail "duration must look like ${MAUVE}30m${RESET}, ${MAUVE}4h${RESET}, ${MAUVE}1d${RESET}, ${MAUVE}hourly${RESET}, or ${MAUVE}daily${RESET}." 2
+  fi
+}
+
+# Usage ---------------------------------------------------------------------
+
+usage() {
+  cat <<EOF
+${BOLD}${MAUVE}${CAT} $APP_NAME${RESET} ${SUBTEXT}— $TAGLINE${RESET}
+
+${BOLD}Usage:${RESET} purrpaper <command> [value]
+
+${BOLD}Commands:${RESET}
+  ${MAUVE}status${RESET}              Show a readable status summary
+  ${MAUVE}status --json${RESET}       Show raw widget/control JSON
+  ${MAUVE}rotate${RESET}              Pick and apply a wallpaper now
+  ${MAUVE}save${RESET}                Save the current wallpaper as a favorite
+  ${MAUVE}enable | on${RESET}         Enable automatic rotation
+  ${MAUVE}disable | off${RESET}       Disable automatic rotation
+  ${MAUVE}toggle${RESET}              Toggle automatic rotation
+  ${MAUVE}every <duration>${RESET}    Set the rotation interval: 30m, 4h, 1d, daily, hourly
+  ${MAUVE}sooner <duration>${RESET}   Shorten the interval by that duration
+  ${MAUVE}later <duration>${RESET}    Lengthen the interval by that duration
+  ${MAUVE}open${RESET}                Open the current wallpaper file
+  ${MAUVE}uninstall${RESET}           Remove the CLI link, then remove the Omarchy plugin
+  ${MAUVE}help${RESET}                Show this help
+
+${BOLD}Examples:${RESET}
+  ${SUBTEXT}purrpaper status${RESET}
+  ${SUBTEXT}purrpaper rotate${RESET}
+  ${SUBTEXT}purrpaper save${RESET}
+  ${SUBTEXT}purrpaper every 4h${RESET}
+  ${SUBTEXT}purrpaper every daily${RESET}
+  ${SUBTEXT}purrpaper sooner 1h${RESET}
+
+${MAUVE}${CAT}${RESET} ${SUBTEXT}Durations understand 30m, 4h, 1d, hourly, and daily.${RESET}
+EOF
+}
+
+# Control script access -----------------------------------------------------
+
+need_control() {
+  [[ -x "$CONTROL" ]] || fail "missing control script: ${SUBTEXT}$CONTROL${RESET}" 1
+}
+
+control_status_json() {
+  "$CONTROL" status
+}
+
+# Status rendering ----------------------------------------------------------
+
+print_status() {
+  local json enabled interval current theme catppuccin no_internet rotating remaining
+  local saved_dir cache_dir
+
+  json="$(control_status_json)"
   enabled="$(jq -r 'if .enabled then "enabled" else "disabled" end' <<<"$json")"
   interval="$(jq -r '.intervalMinutes' <<<"$json")"
   current="$(jq -r '.currentName // ""' <<<"$json")"
@@ -152,12 +198,13 @@ print_status() {
   [[ -n "$current" ]] || current="none"
   [[ -n "$theme" ]] || theme="unknown"
 
-  say "${BOLD}${MAUVE}${CAT} Purrpaper${RESET} ${SUBTEXT}— tiny wallpaper magic for Catppuccin Omarchy${RESET}"
+  say "${BOLD}${MAUVE}${CAT} Purrpaper${RESET} ${SUBTEXT}— $TAGLINE${RESET}"
   if [[ "$enabled" == "enabled" ]]; then
     label "Status" "${GREEN}enabled${RESET} ${SUBTEXT}(${CAT} softly shuffling pixels)${RESET}"
   else
     label "Status" "${RED}disabled${RESET} ${SUBTEXT}(${CAT} napping)${RESET}"
   fi
+
   label "Wallpaper" "${PINK}$current${RESET}"
   label "Theme" "${MAUVE}$theme${RESET}"
   label "Interval" "${TEXT}$(human_duration "$interval")${RESET}"
@@ -170,11 +217,112 @@ print_status() {
   [[ "$rotating" == true ]] && warn "a rotation is currently running."
 }
 
+# Command actions -----------------------------------------------------------
+
 set_interval() {
   local minutes="$1"
+
   "$CONTROL" interval "$minutes" >/dev/null
   success "Interval set to ${MAUVE}$(human_duration "$minutes")${TEXT}. ${SUBTEXT}${CAT} will keep time.${TEXT}"
 }
+
+rotate_now() {
+  local output wallpaper skipped no_internet
+
+  output="$("$CONTROL" rotate)"
+  wallpaper="$(printf '%s\n' "$output" | sed -n 's/^Rotated to: //p' | tail -1)"
+  skipped="$(printf '%s\n' "$output" | sed -n 's/^Skipped: //p' | tail -1)"
+  no_internet="$(printf '%s\n' "$output" | sed -n 's/^No internet: //p' | tail -1)"
+
+  if [[ -n "$wallpaper" ]]; then
+    success "Now wearing ${PINK}$wallpaper${TEXT}. ${SUBTEXT}${CAT} fresh pixels, fresh mood.${TEXT}"
+  elif [[ -n "$skipped" ]]; then
+    warn "Rotation skipped: ${TEXT}$skipped ${SUBTEXT}${CAT} stayed put.${PEACH}"
+  elif [[ -n "$no_internet" ]]; then
+    warn "No internet: ${TEXT}$no_internet ${SUBTEXT}${CAT} waiting for signal.${PEACH}"
+  else
+    success "${output:-Rotated.} ${SUBTEXT}${CAT} fresh pixels, fresh mood.${TEXT}"
+  fi
+}
+
+save_current() {
+  local output saved_path already_path
+
+  output="$("$CONTROL" save)"
+  saved_path="$(printf '%s\n' "$output" | sed -n 's/^Saved current background to: //p' | tail -1)"
+  already_path="$(printf '%s\n' "$output" | sed -n 's/^Already saved: //p' | tail -1)"
+
+  if [[ -n "$saved_path" ]]; then
+    success "Saved ${PINK}$(basename -- "$saved_path")${TEXT} to your favorites. ${SUBTEXT}${CAT} good catch.${TEXT}"
+    label "Favorites" "${SUBTEXT}$(pretty_path "$(dirname -- "$saved_path")")${RESET}"
+  elif [[ -n "$already_path" ]]; then
+    success "${PINK}$(basename -- "$already_path")${TEXT} was already in your favorites. ${SUBTEXT}${CAT} still a good pick.${TEXT}"
+    label "Favorites" "${SUBTEXT}$(pretty_path "$(dirname -- "$already_path")")${RESET}"
+  else
+    success "${output:-Saved current wallpaper.} ${SUBTEXT}${CAT} good catch.${TEXT}"
+  fi
+}
+
+enable_rotation() {
+  "$CONTROL" enable >/dev/null
+  success "Automatic rotation ${GREEN}enabled${TEXT}. ${SUBTEXT}${CAT} back on wallpaper duty.${TEXT}"
+}
+
+disable_rotation() {
+  "$CONTROL" disable >/dev/null
+  disabled "Automatic rotation ${RED}disabled${TEXT}. ${SUBTEXT}${CAT} curled up under a Mocha blanket.${TEXT}"
+}
+
+toggle_rotation() {
+  local json
+
+  json="$("$CONTROL" toggle)"
+  if [[ "$(jq -r '.enabled' <<<"$json")" == true ]]; then
+    success "Automatic rotation ${GREEN}enabled${TEXT}. ${SUBTEXT}${CAT} back on wallpaper duty.${TEXT}"
+  else
+    disabled "Automatic rotation ${RED}disabled${TEXT}. ${SUBTEXT}${CAT} curled up under a Mocha blanket.${TEXT}"
+  fi
+
+  say ""
+  print_status
+}
+
+shift_interval() {
+  local direction="$1" minutes="$2"
+
+  case "$direction" in
+    sooner)
+      "$CONTROL" interval-delta "-$minutes" >/dev/null
+      success "Pulled the next shuffle ${MAUVE}$(human_duration "$minutes")${TEXT} closer. ${SUBTEXT}${CAT} impatient in the best way.${TEXT}"
+      ;;
+    later)
+      "$CONTROL" interval-delta "$minutes" >/dev/null
+      success "Gave the current wallpaper ${MAUVE}$(human_duration "$minutes")${TEXT} more time. ${SUBTEXT}${CAT} let it linger.${TEXT}"
+      ;;
+  esac
+
+  print_status
+}
+
+open_current() {
+  local json current_path current_name
+
+  json="$(control_status_json)"
+  current_path="$(jq -r '.current // ""' <<<"$json")"
+  current_name="$(jq -r '.currentName // ""' <<<"$json")"
+
+  "$CONTROL" open-current
+  [[ -n "$current_name" ]] || current_name="current wallpaper"
+  success "Opened ${PINK}$current_name${TEXT}. ${SUBTEXT}${CAT} take a closer look.${TEXT}"
+  [[ -n "$current_path" ]] && label "Path" "${SUBTEXT}$(pretty_path "$current_path")${RESET}"
+}
+
+uninstall_plugin() {
+  cat_note "Cleaning up the cozy pawprints..."
+  "$APP_DIR/uninstall.sh" "$@"
+}
+
+# CLI dispatch --------------------------------------------------------------
 
 command="${1:-status}"
 case "$command" in
@@ -183,8 +331,7 @@ case "$command" in
     exit 0
     ;;
   uninstall|remove)
-    cat_note "Cleaning up the cozy pawprints..."
-    "$APP_DIR/uninstall.sh" "${@:2}"
+    uninstall_plugin "${@:2}"
     exit 0
     ;;
 esac
@@ -194,84 +341,35 @@ need_control
 case "$command" in
   status)
     if [[ "${2:-}" == "--json" ]]; then
-      "$CONTROL" status | jq .
+      control_status_json | jq .
     else
       print_status
     fi
     ;;
   rotate)
-    output="$("$CONTROL" rotate)"
-    wallpaper="$(printf '%s\n' "$output" | sed -n 's/^Rotated to: //p' | tail -1)"
-    skipped="$(printf '%s\n' "$output" | sed -n 's/^Skipped: //p' | tail -1)"
-    no_internet="$(printf '%s\n' "$output" | sed -n 's/^No internet: //p' | tail -1)"
-    if [[ -n "$wallpaper" ]]; then
-      success "Now wearing ${PINK}$wallpaper${TEXT}. ${SUBTEXT}${CAT} fresh pixels, fresh mood.${TEXT}"
-    elif [[ -n "$skipped" ]]; then
-      warn "Rotation skipped: ${TEXT}$skipped ${SUBTEXT}${CAT} stayed put.${PEACH}"
-    elif [[ -n "$no_internet" ]]; then
-      warn "No internet: ${TEXT}$no_internet ${SUBTEXT}${CAT} waiting for signal.${PEACH}"
-    else
-      success "${output:-Rotated.} ${SUBTEXT}${CAT} fresh pixels, fresh mood.${TEXT}"
-    fi
+    rotate_now
     ;;
   save)
-    output="$("$CONTROL" save)"
-    saved_path="$(printf '%s\n' "$output" | sed -n 's/^Saved current background to: //p' | tail -1)"
-    already_path="$(printf '%s\n' "$output" | sed -n 's/^Already saved: //p' | tail -1)"
-    if [[ -n "$saved_path" ]]; then
-      success "Saved ${PINK}$(basename -- "$saved_path")${TEXT} to your favorites. ${SUBTEXT}${CAT} good catch.${TEXT}"
-      label "Favorites" "${SUBTEXT}$(pretty_path "$(dirname -- "$saved_path")")${RESET}"
-    elif [[ -n "$already_path" ]]; then
-      success "${PINK}$(basename -- "$already_path")${TEXT} was already in your favorites. ${SUBTEXT}${CAT} still a good pick.${TEXT}"
-      label "Favorites" "${SUBTEXT}$(pretty_path "$(dirname -- "$already_path")")${RESET}"
-    else
-      success "${output:-Saved current wallpaper.} ${SUBTEXT}${CAT} good catch.${TEXT}"
-    fi
+    save_current
     ;;
   enable|on)
-    "$CONTROL" enable >/dev/null
-    success "Automatic rotation ${GREEN}enabled${TEXT}. ${SUBTEXT}${CAT} back on wallpaper duty.${TEXT}"
+    enable_rotation
     ;;
   disable|off)
-    "$CONTROL" disable >/dev/null
-    disabled "Automatic rotation ${RED}disabled${TEXT}. ${SUBTEXT}${CAT} curled up under a Mocha blanket.${TEXT}"
+    disable_rotation
     ;;
   toggle)
-    json="$("$CONTROL" toggle)"
-    if [[ "$(jq -r '.enabled' <<<"$json")" == true ]]; then
-      success "Automatic rotation ${GREEN}enabled${TEXT}. ${SUBTEXT}${CAT} back on wallpaper duty.${TEXT}"
-    else
-      disabled "Automatic rotation ${RED}disabled${TEXT}. ${SUBTEXT}${CAT} curled up under a Mocha blanket.${TEXT}"
-    fi
-    say ""
-    print_status
+    toggle_rotation
     ;;
   every|interval)
-    minutes="$(duration_minutes "${2:-}")"
-    set_interval "$minutes"
+    set_interval "$(duration_minutes "${2:-}")"
     ;;
-  sooner)
-    minutes="$(duration_minutes "${2:-}")"
-    "$CONTROL" interval-delta "-$minutes" >/dev/null
-    success "Pulled the next shuffle ${MAUVE}$(human_duration "$minutes")${TEXT} closer. ${SUBTEXT}${CAT} impatient in the best way.${TEXT}"
-    print_status
-    ;;
-  later)
-    minutes="$(duration_minutes "${2:-}")"
-    "$CONTROL" interval-delta "$minutes" >/dev/null
-    success "Gave the current wallpaper ${MAUVE}$(human_duration "$minutes")${TEXT} more time. ${SUBTEXT}${CAT} let it linger.${TEXT}"
-    print_status
+  sooner|later)
+    shift_interval "$command" "$(duration_minutes "${2:-}")"
     ;;
   open|open-current)
-    json="$($CONTROL status)"
-    current_path="$(jq -r '.current // ""' <<<"$json")"
-    current_name="$(jq -r '.currentName // ""' <<<"$json")"
-    "$CONTROL" open-current
-    [[ -n "$current_name" ]] || current_name="current wallpaper"
-    success "Opened ${PINK}$current_name${TEXT}. ${SUBTEXT}${CAT} take a closer look.${TEXT}"
-    [[ -n "$current_path" ]] && label "Path" "${SUBTEXT}$(pretty_path "$current_path")${RESET}"
+    open_current
     ;;
-
   *)
     warn "Unknown command: ${MAUVE}$command${RESET}"
     usage >&2
