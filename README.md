@@ -1,4 +1,4 @@
-# 󰄛 purrpaper
+# purrpaper
 
 > tiny wallpaper magic for Catppuccin Omarchy
 
@@ -8,7 +8,7 @@ The cat is polite about it. Rotation only happens while your active Omarchy them
 
 The source gallery lives at <https://files.orangc.net/media/walls-catppuccin-mocha/>, and the script reads its index from <https://api.github.com/repos/orangci/walls-catppuccin-mocha/contents/>.
 
-## 󰄛 the vibe
+## the vibe
 
 Purrpaper gives you an Omarchy service, a small bar widget, and a friendly `purrpaper` CLI. The service does the quiet wallpaper work in the background. The widget is there for quick little rituals: left click opens the panel, right click rotates now, and middle click saves the current wallpaper before it wanders back into the cozy void.
 
@@ -22,7 +22,7 @@ purrpaper every 4h
 ```
 
 ```text
-󰄛 Purrpaper — tiny wallpaper magic for Catppuccin Omarchy
+󰄛 Purrpaper - tiny wallpaper magic for Catppuccin Omarchy
 Status             enabled (󰄛 softly shuffling pixels)
 Wallpaper          dominik-mayer-20.jpg
 Theme              catppuccin
@@ -63,24 +63,24 @@ Rotate immediately when you want fresh pixels and a fresh mood:
 
 ```bash
 purrpaper rotate
-# 󰄛 Now wearing puffy-stars.jpg. 󰄛 fresh pixels, fresh mood.
+# 󰄛 Now wearing puffy-stars.jpg. Fresh pixels, fresh mood.
 ```
 
 Save the current wallpaper as a favorite when it feels too good to lose:
 
 ```bash
 purrpaper save
-# 󰄛 Saved foggy-city.jpg to your favorites. 󰄛 good catch.
+# 󰄛 Saved foggy-city.jpg to your favorites. Good catch.
 ```
 
 Automatic rotation can be enabled, disabled, or toggled whenever the mood changes:
 
 ```bash
 purrpaper enable
-# 󰄛 Automatic rotation enabled. 󰄛 back on wallpaper duty.
+# 󰄛 Automatic rotation enabled. Back on wallpaper duty.
 
 purrpaper disable
-# 󰄛 Automatic rotation disabled. 󰄛 curled up under a Mocha blanket.
+# 󰄛 Automatic rotation disabled. Curled up under a Mocha blanket.
 
 purrpaper toggle
 ```
