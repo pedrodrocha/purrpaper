@@ -8,10 +8,24 @@ The cat is polite about it. Rotation only happens while your active Omarchy them
 
 The source gallery lives at <https://files.orangc.net/media/walls-catppuccin-mocha/>, and the script reads its index from <https://api.github.com/repos/orangci/walls-catppuccin-mocha/contents/>.
 
-<p align="center">
-  <img src="docs/assets/purrpaper-panel-enabled.png" alt="Purrpaper panel showing the enabled state, current wallpaper, interval controls, and rotate/save buttons" width="430">
-  <img src="docs/assets/purrpaper-panel-disabled.png" alt="Purrpaper panel showing the disabled state with a single enable button" width="330">
-</p>
+<table>
+  <tr>
+    <td colspan="2" align="center">
+      <img src="docs/assets/purrpaper-panel-enabled.png" alt="Purrpaper panel showing the enabled state, current wallpaper, interval controls, and rotate/save buttons" width="560"><br>
+      <sub>Enabled on Catppuccin: rotate now, save favorites, and tune the interval from the panel.</sub>
+    </td>
+  </tr>
+  <tr>
+    <td align="center" width="50%">
+      <img src="docs/assets/purrpaper-panel-disabled.png" alt="Purrpaper panel showing the disabled state with a single enable button" width="360"><br>
+      <sub>Disabled: the cat is napping until you enable rotation again.</sub>
+    </td>
+    <td align="center" width="50%">
+      <img src="docs/assets/purrpaper-panel-paused-theme.png" alt="Purrpaper panel paused because the active Omarchy theme is not Catppuccin" width="360"><br>
+      <sub>Paused on other themes: purrpaper shows state, then waits politely.</sub>
+    </td>
+  </tr>
+</table>
 
 It is meant to feel like a little bit of desktop magic: quiet most of the time, present when you ask for it, and just playful enough to make wallpaper rotation feel less like configuration and more like a tiny ritual.
 
