@@ -191,16 +191,18 @@ The installed plugin copy lives here:
 
 ## development
 
-Useful little incantations:
+Useful little incantations live in the `Makefile`:
 
 ```bash
 make check
 make install
-purrpaper status
-purrpaper rotate
-purrpaper save
+make status
+make rotate
+make save
+make enable
+make disable
 ```
 
-The code is intentionally boring: shell scripts own behavior and state, QML displays that state and calls `scripts/control`, and the CLI wraps the same control script with friendlier output.
+The code is intentionally boring: shell scripts own behavior and state, QML displays that state and calls `scripts/control`, and the CLI wraps the same control script with friendlier output. The `Makefile` is the development entry point for validation, linting, install, and local control commands.
 
 Purrpaper uses common Omarchy dependencies such as `bash`, `curl`, `jq`, and `shuf`. It does not use privilege escalation, generated build steps, embedded Python, or download-and-execute behavior. See `SECURITY_BASELINE.md` for the marketplace baseline notes.
