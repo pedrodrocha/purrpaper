@@ -1,0 +1,124 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+# Bootstrap -----------------------------------------------------------------
+
+SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
+# shellcheck source=scripts/lib.sh
+source "$SCRIPT_DIR/lib.sh"
+
+FORCE=0
+DRY_RUN=0
+
+# CLI parsing ---------------------------------------------------------------
+
+usage() {
+  cat <<EOF
+Usage: rotate-background [--force] [--dry-run]
+
+Pick a random image from orangc's Catppuccin Mocha wallpaper collection and set
+it as the Omarchy background.
+
+Options:
+  --force    Rotate now, ignoring the enabled flag and interval guard.
+  --dry-run  Print what would be downloaded without changing anything.
+  -h, --help Show this help.
+EOF
+}
+
+parse_args() {
+  while (($#)); do
+    case "$1" in
+      --force) FORCE=1 ;;
+      --dry-run) DRY_RUN=1 ;;
+      -h|--help) usage; exit 0 ;;
+      *) echo "Unknown option: $1" >&2; usage >&2; exit 2 ;;
+    esac
+    shift
+  done
+}
+
+# Guards --------------------------------------------------------------------
+
+skip_if_wrong_theme() {
+  if ! is_catppuccin_active; then
+    echo "Skipped: active theme is '$(current_theme)' (not $THEME_SLUG)."
+    exit 0
+  fi
+}
+
+skip_if_disabled_or_early() {
+  local now_epoch next_epoch
+
+  (( FORCE )) && return 0
+
+  if (( ENABLED == 0 )); then
+    echo "Skipped: rotation is disabled."
+    exit 0
+  fi
+
+  now_epoch="$(date +%s)"
+  next_epoch="$(next_run_epoch)"
+  if (( now_epoch < next_epoch )); then
+    echo "Skipped: next rotation in $(( next_epoch - now_epoch ))s."
+    exit 0
+  fi
+}
+
+# Rotation steps ------------------------------------------------------------
+
+pick_wallpaper_or_exit() {
+  if ! pick="$(pick_random_wallpaper)" || [[ -z "$pick" ]]; then
+    mark_no_internet
+    echo "No internet: could not reach wallpaper index."
+    exit 0
+  fi
+}
+
+resolve_wallpaper_target() {
+  image_url="${pick%%$'\t'*}"
+  filename="${pick#*$'\t'}"
+  target="$CACHE_DIR/$filename"
+}
+
+print_dry_run() {
+  printf 'Would download: %s\nWould save to:  %s\n' "$image_url" "$target"
+}
+
+download_or_exit() {
+  if ! download_wallpaper "$image_url" "$target"; then
+    mark_no_internet
+    echo "No internet: could not download wallpaper."
+    exit 0
+  fi
+}
+
+apply_rotation() {
+  clear_network_state
+  set_background "$target"
+  cleanup_transient_cache "$target"
+  record_rotation "$image_url" "$target"
+  echo "Set Omarchy background to: $target"
+}
+
+# Main ----------------------------------------------------------------------
+
+parse_args "$@"
+ensure_dirs
+load_settings
+skip_if_wrong_theme
+skip_if_disabled_or_early
+
+mark_rotation_running
+trap clear_rotation_running EXIT
+
+pick_wallpaper_or_exit
+resolve_wallpaper_target
+
+if (( DRY_RUN )); then
+  print_dry_run
+  exit 0
+fi
+
+download_or_exit
+apply_rotation

@@ -1,0 +1,40 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+# Bootstrap -----------------------------------------------------------------
+
+SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
+# shellcheck source=scripts/lib.sh
+source "$SCRIPT_DIR/lib.sh"
+
+ensure_dirs
+
+# Current background --------------------------------------------------------
+
+require_current_background() {
+  current="$(current_background)"
+
+  if [[ -z "$current" || ! -f "$current" ]]; then
+    echo "No current Omarchy background found." >&2
+    exit 1
+  fi
+}
+
+# Save operation ------------------------------------------------------------
+
+save_current_background() {
+  target="$(saved_target_for "$current")"
+
+  if [[ -e "$target" ]]; then
+    echo "Already saved: $target"
+    return 0
+  fi
+
+  cp -- "$current" "$target"
+  echo "Saved current background to: $target"
+}
+
+# Main ----------------------------------------------------------------------
+
+require_current_background
+save_current_background

@@ -1,0 +1,12 @@
+#!/usr/bin/env bash
+set -euo pipefail
+cd "$(dirname -- "${BASH_SOURCE[0]}")/.."
+
+# Qt 6.11's qmllint currently exits 255 on valid files using
+# `pragma ComponentBehavior: Bound` in this plugin shape, while qmlls/Zed need
+# the pragma to correctly understand nested components. Lint a temporary copy
+# without that one pragma; runtime and editor keep the real file unchanged.
+tmp="$(mktemp --suffix=.qml)"
+trap 'rm -f "$tmp"' EXIT
+sed '/^pragma ComponentBehavior: Bound$/d' BarWidget.qml > "$tmp"
+qmllint -I "${OMARCHY_PATH:-/usr/share/omarchy}/shell" "$tmp" Service.qml ui/*.qml

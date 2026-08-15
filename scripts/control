@@ -1,0 +1,141 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+# Bootstrap -----------------------------------------------------------------
+
+SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
+PLUGIN_DIR="$(cd -- "$SCRIPT_DIR/.." && pwd)"
+# shellcheck source=scripts/lib.sh
+source "$SCRIPT_DIR/lib.sh"
+
+ROTATE_SCRIPT="$SCRIPT_DIR/rotate-background"
+SAVE_SCRIPT="$SCRIPT_DIR/save-current"
+
+ensure_dirs
+load_settings
+
+# JSON formatting -----------------------------------------------------------
+
+json_bool() {
+  if (( ${1:-0} )); then echo true; else echo false; fi
+}
+
+status_json() {
+  local current current_name theme cat_active internet_bad rotating last_epoch now next remaining last_url last_path
+
+  current="$(current_background)"
+  current_name="${current##*/}"
+  theme="$(current_theme)"
+  cat_active=0; [[ "$theme" == "$THEME_SLUG" ]] && cat_active=1
+  internet_bad=0; no_internet && internet_bad=1
+  rotating=0; rotation_running && rotating=1
+  last_epoch="$(last_run_epoch)"
+  now="$(date +%s)"
+  next="$(next_run_epoch)"
+  remaining=$(( next - now )); (( remaining < 0 )) && remaining=0
+  last_url="$(last_pick_url)"
+  last_path="$(last_pick_path)"
+
+  jq -cn \
+    --argjson enabled "$(json_bool "$ENABLED")" \
+    --argjson intervalMinutes "$INTERVAL_MINUTES" \
+    --arg current "$current" \
+    --arg currentName "$current_name" \
+    --arg currentTheme "$theme" \
+    --argjson catppuccinActive "$(json_bool "$cat_active")" \
+    --argjson noInternet "$(json_bool "$internet_bad")" \
+    --argjson rotating "$(json_bool "$rotating")" \
+    --argjson lastRunEpoch "$last_epoch" \
+    --argjson nextRunEpoch "$next" \
+    --argjson remainingSeconds "$remaining" \
+    --arg lastUrl "$last_url" \
+    --arg lastPath "$last_path" \
+    '{enabled: $enabled, intervalMinutes: $intervalMinutes, current: $current, currentName: $currentName, currentTheme: $currentTheme, catppuccinActive: $catppuccinActive, noInternet: $noInternet, rotating: $rotating, lastRunEpoch: $lastRunEpoch, nextRunEpoch: $nextRunEpoch, remainingSeconds: $remainingSeconds, lastUrl: $lastUrl, lastPath: $lastPath}'
+}
+
+# Settings mutations --------------------------------------------------------
+
+set_interval() {
+  local minutes="$1"
+
+  [[ "$minutes" =~ ^[0-9]+$ ]] || { echo "Interval must be minutes." >&2; exit 2; }
+  (( minutes >= 1 )) || minutes=1
+  [[ "$INTERVAL_MINUTES" == "$minutes" ]] && return 0
+
+  INTERVAL_MINUTES="$minutes"
+  save_settings
+}
+
+set_enabled() {
+  local enabled="$1"
+
+  [[ "$ENABLED" == "$enabled" ]] && return 0
+  ENABLED="$enabled"
+  save_settings
+}
+
+toggle_enabled() {
+  (( ENABLED )) && set_enabled 0 || set_enabled 1
+}
+
+# Actions -------------------------------------------------------------------
+
+rotate_now() {
+  local output target
+
+  output="$($ROTATE_SCRIPT --force)"
+  target="$(printf '%s\n' "$output" | sed -n 's/^Set Omarchy background to: //p' | tail -1)"
+  [[ -n "$target" ]] && echo "Rotated to: $(basename -- "$target")" || printf '%s\n' "$output" | tail -1
+}
+
+open_current_background() {
+  local current
+
+  current="$(current_background)"
+  [[ -n "$current" ]] && xdg-open "$current" >/dev/null 2>&1 &
+}
+
+usage() {
+  echo "Usage: control {status|rotate|save|enable|disable|toggle|interval <minutes>|interval-delta <minutes>|open-current}"
+}
+
+# CLI dispatch --------------------------------------------------------------
+
+case "${1:-status}" in
+  status)
+    status_json
+    ;;
+  rotate)
+    rotate_now
+    ;;
+  save)
+    "$SAVE_SCRIPT"
+    ;;
+  enable)
+    set_enabled 1; status_json
+    ;;
+  disable)
+    set_enabled 0; status_json
+    ;;
+  toggle)
+    toggle_enabled; status_json
+    ;;
+  interval)
+    set_interval "${2:-}"; status_json
+    ;;
+  interval-delta)
+    delta="${2:-}"
+    [[ "$delta" =~ ^-?[0-9]+$ ]] || { echo "Delta must be minutes." >&2; exit 2; }
+    set_interval "$(( INTERVAL_MINUTES + delta ))"; status_json
+    ;;
+  open-current)
+    open_current_background
+    ;;
+  -h|--help)
+    usage
+    ;;
+  *)
+    usage >&2
+    exit 2
+    ;;
+esac

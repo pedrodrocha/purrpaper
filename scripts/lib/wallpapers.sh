@@ -1,0 +1,73 @@
+#!/usr/bin/env bash
+# Wallpaper source provider and local cache policy.
+
+# Validation ----------------------------------------------------------------
+
+is_safe_wallpaper_filename() {
+  local filename="$1"
+
+  [[ "$filename" == "${filename##*/}" ]] || return 1
+  [[ "$filename" != .* ]] || return 1
+  [[ "$filename" =~ ^[A-Za-z0-9._[:space:]-]+\.(jpe?g|png|gif|bmp|webp)$ ]]
+}
+
+is_expected_wallpaper_url() {
+  local image_url="$1"
+
+  [[ "$image_url" == https://raw.githubusercontent.com/orangci/walls-catppuccin-mocha/* ]]
+}
+
+# Remote provider -----------------------------------------------------------
+
+pick_random_wallpaper() {
+  # Returns: <download-url> TAB <filename>. The remote JSON is data only: it is
+  # parsed, filtered to the expected mirror, and never executed.
+  curl -fsSL --retry 2 -A 'Mozilla/5.0' "$GITHUB_API_URL" |
+    jq -r '.[]
+      | select(.type == "file")
+      | select(.name | test("^[A-Za-z0-9._ -]+\\.(jpe?g|png|gif|bmp|webp)$"; "i"))
+      | select(.download_url | startswith("https://raw.githubusercontent.com/orangci/walls-catppuccin-mocha/"))
+      | [.download_url, .name]
+      | @tsv' |
+    shuf -n 1
+}
+
+# Downloads -----------------------------------------------------------------
+
+download_wallpaper() {
+  local image_url="$1"
+  local target="$2"
+  local filename tmp
+
+  filename="$(basename -- "$target")"
+  is_safe_wallpaper_filename "$filename" || return 1
+  is_expected_wallpaper_url "$image_url" || return 1
+  [[ "$target" == "$CACHE_DIR/$filename" ]] || return 1
+  [[ -s "$target" ]] && return 0
+
+  tmp="$(mktemp --tmpdir="$CACHE_DIR" ".download.$filename.XXXXXX")"
+  if ! curl -fsSL --retry 3 -A 'Mozilla/5.0' --output "$tmp" "$image_url"; then
+    rm -f "$tmp"
+    return 1
+  fi
+
+  mv -f -- "$tmp" "$target"
+}
+
+# Local cache ----------------------------------------------------------------
+
+cleanup_transient_cache() {
+  local keep="$1"
+
+  [[ -d "$CACHE_DIR" && -f "$keep" ]] || return 0
+  find "$CACHE_DIR" -maxdepth 1 -type f \
+    \( -iname '*.jpg' -o -iname '*.jpeg' -o -iname '*.png' -o -iname '*.gif' -o -iname '*.bmp' -o -iname '*.webp' \) \
+    ! -samefile "$keep" -delete 2>/dev/null || true
+}
+
+saved_target_for() {
+  local filename
+
+  filename="$(basename -- "$1")"
+  printf '%s/%s\n' "$SAVED_DIR" "$filename"
+}
