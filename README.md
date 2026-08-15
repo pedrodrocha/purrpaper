@@ -51,6 +51,12 @@ Cache              ~/.config/omarchy/backgrounds/catppuccin/orangc-random
 
 When your terminal supports color, purrpaper uses the Catppuccin palette. If you prefer plain text, run it with `NO_COLOR=1`.
 
+## small promises
+
+Purrpaper keeps only one temporary random wallpaper in its cache, so it should not grow into a tiny wallpaper dragon. Saved favorites are copied into Omarchy's normal Catppuccin backgrounds folder and are never deleted by cache cleanup. If a favorite filename already exists, purrpaper will not duplicate it.
+
+If the network, gallery, or download fails, the script exits cleanly, keeps your current background, and reports the no-internet state through the widget and CLI.
+
 ## install
 
 Install it from GitHub with Omarchy:
@@ -156,12 +162,6 @@ omarchy plugin remove pedrodrocha.purrpaper
 ```
 
 Omarchy will remove the plugin, but it does not run plugin cleanup hooks, so the CLI symlink may stay behind.
-
-## small promises
-
-Purrpaper keeps only one temporary random wallpaper in its cache, so it should not grow into a tiny wallpaper dragon. Saved favorites are copied into Omarchy's normal Catppuccin backgrounds folder and are never deleted by cache cleanup. If a favorite filename already exists, purrpaper will not duplicate it.
-
-If the network, gallery, or download fails, the script exits cleanly, keeps your current background, and reports the no-internet state through the widget and CLI.
 
 ## files and state
 
