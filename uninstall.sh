@@ -55,5 +55,12 @@ remove_plugin() {
   fi
 }
 
-remove_cli_link
-remove_plugin "$@"
+case "${1:-}" in
+  --cli-only)
+    remove_cli_link
+    ;;
+  *)
+    remove_cli_link
+    remove_plugin "$@"
+    ;;
+esac

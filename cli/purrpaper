@@ -152,7 +152,8 @@ ${BOLD}Commands:${RESET}
   ${MAUVE}sooner <duration>${RESET}   Shorten the interval by that duration
   ${MAUVE}later <duration>${RESET}    Lengthen the interval by that duration
   ${MAUVE}open${RESET}                Open the current wallpaper file
-  ${MAUVE}uninstall${RESET}           Remove the CLI link, then remove the Omarchy plugin
+  ${MAUVE}remove${RESET}              Remove the CLI link, then remove the Omarchy plugin
+  ${MAUVE}unlink${RESET}              Remove only the CLI link
   ${MAUVE}help${RESET}                Show this help
 
 ${BOLD}Examples:${RESET}
@@ -317,9 +318,14 @@ open_current() {
   [[ -n "$current_path" ]] && label "Path" "${SUBTEXT}$(pretty_path "$current_path")${RESET}"
 }
 
-uninstall_plugin() {
+remove_plugin() {
   cat_note "Cleaning up the cozy pawprints..."
   "$APP_DIR/uninstall.sh" "$@"
+}
+
+unlink_cli() {
+  cat_note "Removing the purrpaper command link..."
+  "$APP_DIR/uninstall.sh" --cli-only
 }
 
 # CLI dispatch --------------------------------------------------------------
@@ -330,8 +336,17 @@ case "$command" in
     usage
     exit 0
     ;;
-  uninstall|remove)
-    uninstall_plugin "${@:2}"
+  remove)
+    remove_plugin "${@:2}"
+    exit 0
+    ;;
+  unlink)
+    unlink_cli
+    exit 0
+    ;;
+  uninstall)
+    warn "'uninstall' is kept as an alias; prefer ${MAUVE}purrpaper remove${RESET}."
+    remove_plugin "${@:2}"
     exit 0
     ;;
 esac

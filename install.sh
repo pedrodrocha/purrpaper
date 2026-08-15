@@ -69,7 +69,8 @@ print_summary() {
   label "Source" "${SUBTEXT}$(pretty_path "$repo_dir")${RESET}"
   label "Installed copy" "${SUBTEXT}$(pretty_path "$PLUGIN_INSTALL_DIR")${RESET}"
   label "CLI" "${MAUVE}purrpaper${RESET} ${SUBTEXT}($(pretty_path "${XDG_BIN_HOME:-$HOME/.local/bin}/purrpaper"))${RESET}"
-  label "Uninstall" "${MAUVE}purrpaper uninstall${RESET}"
+  label "Remove" "${MAUVE}purrpaper remove${RESET}"
+  label "Unlink CLI" "${MAUVE}purrpaper unlink${RESET}"
 }
 
 # Main ----------------------------------------------------------------------

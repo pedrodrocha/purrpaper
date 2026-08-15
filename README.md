@@ -121,12 +121,18 @@ The lower-level script API still exists at `scripts/control`, but the CLI is the
 Let purrpaper clean up its own pawprints with:
 
 ```bash
-purrpaper uninstall
+purrpaper remove
 ```
 
 That removes the `~/.local/bin/purrpaper` symlink first, then asks Omarchy to remove the plugin.
 
-You can also run:
+If you only want to remove the terminal command and keep the plugin installed, unlink the CLI instead:
+
+```bash
+purrpaper unlink
+```
+
+You can also remove the plugin directly through Omarchy:
 
 ```bash
 omarchy plugin remove pedrodrocha.purrpaper
