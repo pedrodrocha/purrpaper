@@ -6,7 +6,7 @@ Purrpaper is a cozy little Omarchy plugin for people who want their Catppuccin d
 
 The cat is polite about it. Rotation only happens while your active Omarchy theme is `catppuccin`; if you switch themes, purrpaper curls up and leaves your background alone until Catppuccin comes back.
 
-The source gallery lives at <https://files.orangc.net/media/walls-catppuccin-mocha/>, and the script reads its index from <https://api.github.com/repos/orangci/walls-catppuccin-mocha/contents/>.
+The source gallery lives at <https://files.orangc.net/media/walls-catppuccin-mocha/>, and the script reads its index from that gallery directly. GitHub is kept only as a fallback mirror.
 
 It is meant to feel like a little bit of desktop magic: quiet most of the time, present when you ask for it, and just playful enough to make wallpaper rotation feel less like configuration and more like a tiny ritual.
 
