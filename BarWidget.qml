@@ -23,12 +23,6 @@ BarWidget {
     Qt.callLater(function() { root.popoutSwitchClosing = false })
   }
 
-  function switchPanel(direction) {
-    if (root.bar && typeof root.bar.switchPanelFrom === "function")
-      return root.bar.switchPanelFrom(root, direction)
-    return false
-  }
-
   PluginUi.PluginConfig { id: config }
   PluginUi.PluginState {
     id: pluginState
@@ -182,7 +176,6 @@ BarWidget {
       id: keyCatcher
       anchors.fill: parent
       onCloseRequested: root.close()
-      onTabRequested: function(direction) { root.switchPanel(direction) }
 
       Column {
         id: column
