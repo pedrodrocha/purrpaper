@@ -5,6 +5,7 @@
 
 PLUGIN_ID="pedrodrocha.purrpaper"
 THEME_SLUG="catppuccin"
+PICKER_ENTRY_PREFIX="000000-purrpaper"
 
 # Remote wallpaper source ---------------------------------------------------
 

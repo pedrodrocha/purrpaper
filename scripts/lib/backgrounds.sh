@@ -1,8 +1,6 @@
 #!/usr/bin/env bash
 # Local background layout and Omarchy picker entry.
 
-PICKER_ENTRY_PREFIX="000000-purrpaper"
-
 # Generic image helpers -----------------------------------------------------
 
 find_first_background_file() {

@@ -1,9 +1,13 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+# Bootstrap -----------------------------------------------------------------
+
 repo_dir="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
 # shellcheck source=scripts/lib.sh
 source "$repo_dir/scripts/lib.sh"
+
+# Terminal formatting -------------------------------------------------------
 
 if [[ -t 1 && -z "${NO_COLOR:-}" ]]; then
   RESET=$'\033[0m'
@@ -17,6 +21,7 @@ fi
 
 pretty_path() {
   local path="$1"
+
   case "$path" in
     "$HOME") printf '~' ;;
     "$HOME"/*) printf '~/%s' "${path#"$HOME"/}" ;;
@@ -27,6 +32,8 @@ pretty_path() {
 success() { printf '%b\n' "${GREEN}✓${RESET} $*"; }
 warn() { printf '%b\n' "${YELLOW}☾${RESET} $*"; }
 label() { printf '%b%-18s%b %s\n' "$BLUE" "$1" "$RESET" "$2"; }
+
+# Removal steps -------------------------------------------------------------
 
 remove_cli_link() {
   local bin_dir cli_link target
@@ -46,6 +53,10 @@ remove_cli_link() {
   esac
 }
 
+remove_picker_entry() {
+  remove_omarchy_picker_entry
+}
+
 remove_plugin() {
   if [[ -e "$PLUGIN_INSTALL_DIR" || -L "$PLUGIN_INSTALL_DIR" ]]; then
     omarchy plugin remove "$PLUGIN_ID" "$@"
@@ -55,12 +66,15 @@ remove_plugin() {
   fi
 }
 
+# Main ----------------------------------------------------------------------
+
 case "${1:-}" in
   --cli-only)
     remove_cli_link
     ;;
   *)
     remove_cli_link
+    remove_picker_entry
     remove_plugin "$@"
     ;;
 esac
