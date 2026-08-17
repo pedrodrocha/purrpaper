@@ -95,6 +95,7 @@ download_or_exit() {
 
 apply_rotation() {
   clear_network_state
+  publish_omarchy_picker_entry "$target"
   set_background "$target"
   cleanup_transient_cache "$target"
   record_rotation "$image_url" "$target"
@@ -106,6 +107,7 @@ apply_rotation() {
 parse_args "$@"
 ensure_dirs
 load_settings
+reconcile_background_layout
 skip_if_wrong_theme
 skip_if_disabled_or_early
 

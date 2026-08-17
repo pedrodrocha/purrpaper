@@ -33,7 +33,8 @@ This plugin does not use `sudo`, `pkexec`, setuid binaries, privileged services,
 
 The plugin writes only to user-owned Omarchy/config/state locations:
 
-- `~/.config/omarchy/backgrounds/catppuccin/orangc-random/`
+- `~/.config/omarchy/backgrounds/catppuccin/pedrodrocha.purrpaper/`
+- `~/.config/omarchy/backgrounds/catppuccin/000000-purrpaper.<ext>`
 - `~/.config/omarchy/backgrounds/catppuccin/`
 - `~/.local/state/omarchy/pedrodrocha.purrpaper/`
 - `~/.config/omarchy/plugins/pedrodrocha.purrpaper/` during local `install.sh`

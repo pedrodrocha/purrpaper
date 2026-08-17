@@ -194,7 +194,7 @@ print_status() {
   rotating="$(jq -r '.rotating' <<<"$json")"
   remaining="$(jq -r '.remainingSeconds' <<<"$json")"
   saved_dir="$HOME/.config/omarchy/backgrounds/catppuccin"
-  cache_dir="$HOME/.config/omarchy/backgrounds/catppuccin/orangc-random"
+  cache_dir="$HOME/.config/omarchy/backgrounds/catppuccin/pedrodrocha.purrpaper"
 
   [[ -n "$current" ]] || current="none"
   [[ -n "$theme" ]] || theme="unknown"

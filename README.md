@@ -4,7 +4,7 @@
 
 Purrpaper is a cozy little Omarchy plugin for people who want their Catppuccin desktop to quietly surprise them. It picks a random wallpaper from orangc's Catppuccin Mocha collection, downloads it, and applies it with `omarchy theme bg set`.
 
-The cat is polite about it. Rotation only happens while your active Omarchy theme is `catppuccin`; if you switch themes, purrpaper curls up and leaves your background alone until Catppuccin comes back.
+The cat is polite about it. Rotation only happens while your active Omarchy theme is `catppuccin`; if you switch themes, purrpaper curls up and leaves your background alone. When Catppuccin comes back and automatic rotation is enabled, Omarchy sees purrpaper's current cached wallpaper as the first Catppuccin background and picks it naturally.
 
 The source gallery lives at <https://files.orangc.net/media/walls-catppuccin-mocha/>, and the script reads its index from that gallery directly. GitHub is kept only as a fallback mirror.
 
@@ -46,7 +46,7 @@ Theme              catppuccin
 Interval           1 day
 Next rotation      23h 51m
 Favorites          ~/.config/omarchy/backgrounds/catppuccin
-Cache              ~/.config/omarchy/backgrounds/catppuccin/orangc-random
+Cache              ~/.config/omarchy/backgrounds/catppuccin/pedrodrocha.purrpaper
 ```
 
 When your terminal supports color, purrpaper uses the Catppuccin palette. If you prefer plain text, run it with `NO_COLOR=1`.
@@ -168,7 +168,13 @@ Omarchy will remove the plugin, but it does not run plugin cleanup hooks, so the
 Temporary cache lives here:
 
 ```text
-~/.config/omarchy/backgrounds/catppuccin/orangc-random/
+~/.config/omarchy/backgrounds/catppuccin/pedrodrocha.purrpaper/
+```
+
+Purrpaper also maintains a tiny top-level symlink so Omarchy's normal Catppuccin background picker can find the active cached wallpaper when you switch back to the theme:
+
+```text
+~/.config/omarchy/backgrounds/catppuccin/000000-purrpaper.<ext>
 ```
 
 Saved favorites live here:

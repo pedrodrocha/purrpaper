@@ -76,20 +76,3 @@ download_wallpaper() {
   mv -f -- "$tmp" "$target"
 }
 
-# Local cache ----------------------------------------------------------------
-
-cleanup_transient_cache() {
-  local keep="$1"
-
-  [[ -d "$CACHE_DIR" && -f "$keep" ]] || return 0
-  find "$CACHE_DIR" -maxdepth 1 -type f \
-    \( -iname '*.jpg' -o -iname '*.jpeg' -o -iname '*.png' -o -iname '*.gif' -o -iname '*.bmp' -o -iname '*.webp' \) \
-    ! -samefile "$keep" -delete 2>/dev/null || true
-}
-
-saved_target_for() {
-  local filename
-
-  filename="$(basename -- "$1")"
-  printf '%s/%s\n' "$SAVED_DIR" "$filename"
-}
