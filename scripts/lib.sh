@@ -11,7 +11,6 @@ LIB_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/lib" && pwd)"
 #   config.sh       plugin identity, defaults, and remote source
 #   omarchy.sh      Omarchy filesystem layout, state files, and commands
 #   state.sh        persistent plugin settings/runtime state
-#   migrations.sh   one-time compatibility migrations
 #   wallpapers.sh   remote wallpaper provider and downloads
 #   backgrounds.sh  local cache and Omarchy picker-entry policy
 
@@ -21,8 +20,6 @@ source "$LIB_DIR/config.sh"
 source "$LIB_DIR/omarchy.sh"
 # shellcheck source=scripts/lib/state.sh
 source "$LIB_DIR/state.sh"
-# shellcheck source=scripts/lib/migrations.sh
-source "$LIB_DIR/migrations.sh"
 # shellcheck source=scripts/lib/wallpapers.sh
 source "$LIB_DIR/wallpapers.sh"
 # shellcheck source=scripts/lib/backgrounds.sh

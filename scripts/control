@@ -86,7 +86,6 @@ toggle_enabled() {
 # Actions -------------------------------------------------------------------
 
 init_plugin() {
-  run_migrations
   reconcile_background_layout
 }
 
