@@ -51,8 +51,6 @@ publish_last_pick_to_omarchy_picker() {
 }
 
 reconcile_background_layout() {
-  run_migrations
-
   if (( ENABLED )); then
     publish_last_pick_to_omarchy_picker
   else

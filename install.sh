@@ -78,6 +78,7 @@ print_summary() {
 copy_plugin_if_needed
 activate_plugin
 load_settings
+run_migrations
 reconcile_background_layout
 install_cli
 print_summary

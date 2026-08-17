@@ -85,6 +85,11 @@ toggle_enabled() {
 
 # Actions -------------------------------------------------------------------
 
+init_plugin() {
+  run_migrations
+  reconcile_background_layout
+}
+
 rotate_now() {
   local output target
 
@@ -101,7 +106,7 @@ open_current_background() {
 }
 
 usage() {
-  echo "Usage: control {status|rotate|save|enable|disable|toggle|interval <minutes>|interval-delta <minutes>|open-current}"
+  echo "Usage: control {status|init|rotate|save|enable|disable|toggle|interval <minutes>|interval-delta <minutes>|open-current}"
 }
 
 # CLI dispatch --------------------------------------------------------------
@@ -109,6 +114,9 @@ usage() {
 case "${1:-status}" in
   status)
     status_json
+    ;;
+  init)
+    init_plugin
     ;;
   rotate)
     rotate_now
